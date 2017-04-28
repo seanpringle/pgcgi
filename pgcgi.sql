@@ -84,7 +84,7 @@ create or replace function dispatch()
     route_status := route();
     update request set status = route_status;
 
-    -- Collapse multiple response parts together 
+    -- Collapse multiple response parts together
     content := coalesce(
       (select string_agg(document, '') from response),
       route_status::text
@@ -236,7 +236,7 @@ $$;
 
 -- POST data can be character set challenged
 create or replace function bytea_to_array(buffer bytea, pattern bytea)
-  returns bytea[] language plpgsql immutable parallel safe as $$
+  returns bytea[] language plpgsql immutable as $$
   declare
     parts bytea[];
     pos integer;
@@ -255,7 +255,7 @@ create or replace function bytea_to_array(buffer bytea, pattern bytea)
 $$;
 
 create or replace function bytea_part(buffer bytea, pattern bytea, pos integer)
-  returns bytea language sql immutable parallel safe as $$
+  returns bytea language sql immutable as $$
     select (bytea_to_array(buffer, pattern))[pos];
 $$;
 
@@ -413,9 +413,9 @@ create or replace function handler()
     new.size   := 0;
 
     new.referrer := (select value from request_headers where name = 'Referer');
-    
+
     new.agent := (select value from request_headers where name = 'User-Agent');
-    
+
     new.username := coalesce(
       (select value from request_headers where name = 'X-Remote-User'),
       (select value from request_environment where name = 'REMOTE_USER')
@@ -469,7 +469,7 @@ create or replace function handler()
       new.input,
       new.output,
       split_part(new.url, '?', 1),
-      string_to_array(trim(both '/' from split_part(new.url, '?', 1)), '/'),
+      string_to_array(trim(both '/' from url_decode(split_part(new.url, '?', 1))), '/'),
       split_part(new.url, '?', 2)
     );
 

@@ -51,6 +51,16 @@ create or replace function is_current_day(stamp anyelement)
     select stamp::date = current_date;
 $$;
 
+create or replace function try_integer(str text)
+  returns integer language plpgsql immutable parallel safe as $$
+  begin
+    return str::integer;
+  exception
+    when others then
+      return null;
+  end
+$$;
+
 create or replace function try_uuid(str text)
   returns uuid language plpgsql immutable parallel safe as $$
   begin
